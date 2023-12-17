@@ -1,0 +1,987 @@
+\documentclass{article}
+\usepackage{minted}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{color}
+\usepackage{subcaption}
+\usepackage{hyperref}
+
+\setminted{
+  fontsize=\scriptsize
+}
+\usemintedstyle{default}
+\usetikzlibrary{shapes.geometric, arrows}
+
+\title{A computational analysis of the kinematics of curved spacetimes}
+\date{2023-16-10}
+\author{Dawud Aoulad Si Amar}
+\begin{document}
+  \pagenumbering{gobble}
+  \maketitle
+  \newpage
+  \pagenumbering{roman}
+  
+  \section{Introduction}
+
+  The year is 1687. After a brief yet insightful conversation with an acquaintance, Isaac Newton decided to publish a law which he had postulated not too long prior. His friend Edmond Halley, along with a research group consisting of Sir Christopher Wren and Robert Hooke, had been pondering the nature of the fashion through which planetary orbits shape themselves. They noticed that most planets seemed to take on either elliptical or circular orbits which Halley had sought to discuss. During the short conversation Newton had realised that his then unpublished law of gravitational motion, now known as the universal law of gravitation, seemed to coincide with the findings of Edward Halley. Subsequently he had investigated Halley's claim finding that his law of gravitation confirmed the aforementioned hypothesis. 
+
+  Newton's publication of the universal law of gravitation and his prior publication of the principia mathematica formed the basis of kinematics and gravitational theory for the centuries to come though they were not the first strides in the field. Before Newton, Galileo had formulated a basic form of relativity describing the behaviour of kinematic values under coordinate transformations. Even so, a theory describing the gravitational behaviour of stars and planets alike to equal levels of accuracy was revolutionary and the mathematics underlying it were decades ahead of their time.
+
+  Time wanes even the most genius and insightful of theories into obsolescence as even the smallest creases become catastrophic flaws. Newton's theory of gravitation was great but not perfect. In a small amount of cases it presented significant deviations from reality the most severe among which is likely the precession of the mercurial orbit. Newtonian mechanics describes the universe almost ideallistically. Objects with sufficiently low energy will exhibit repetitive and patterned orbits winding around their hosts rhythmically ad infinitum. In 1859, scientist and astrophysicist  le Verrier published his measurements of the perihelion of mercury. The perihelion is the point in a planet's orbit where it reaches the minimal distance to its host. Newtonian mechanics describes orbits in closed systems as stationary; accordingly, orbital paremeters such as the perihelion and apohelion should be constant throughout time. Anomalously, the perihelion of the orbit of mercury seemed to shift ever so slightly every cycle which contradicted the status quo that had reigned for the preceding 200 years. 
+
+  Furthermore, the more encompassing theory of Newtonian mechanics, which Newtonian gravity composed a part of, seemed to exhibit similar discrepancies. The sun, being an oversized fusion reactor, produces a thick blast of electrically charged particles called solar wind. The earth's atmosphere, thankfully, protects us from being fried alive though this doesnt occur without a fight. As solar particles smash into the atmosphere at fractions of the speed of light they fracture into soups of less energetic particles. Among these resulting particles are muons travelling at nearly the speed of light. Muons are highly unstable particles and decay into electrons after roughly 2.2 microseconds of existence. According to Newtonian mechanics, these atmospheric muons are nowhere near fast enough to reach the surface of the earth within their short lifetimes though measurement, yet again, disagrees. Muons are detected regularly on the surface of the earth poking holes in our understandings of mechanics. 
+
+  A solution to these problems would not be delivered until 1905, when a young Albert Einstein published a paper entitled "On the electrodynamics of moving bodies". In this paper, he outlined a new model of mechanics derived from the then novel theory of electrodynamics. Electrodynamics being a field that deals with the movement of charged objects such as the muon or electron on varying scales. Interestingly, the equations that lay its fundaments, the Maxwell equations, seemed to insinuate a model of mechanics subtly divergent from Newton's theory through the presence of a set of rather odd symmetries. Einstein highlighted the theory which could be constructed around these symmetries and derived its properties. This new theory, dubbed special relativity, was equivalent to Newtonian mechanics at small velocities. Interestingly, as velocity increases, perceptions of time and space diverge further and further from the predictions of Newton's physics. The most ground-breaking implication of special relativity was the postulate that time is not an omnipresent ticking clock running at the same tempo for every person but rather a more amorphous object prone to dilation and contraction. This correction once again united measurement and theory though all was not solved yet. Special relativity described the way objects move relative to eachother but did not account for the effects of gravity.
+
+  To properly depict the way gravity fits into physics, Einstein spent a decade letting the ideas brew and brine in his mind. In 1915, he published his theory of general relativity which described special relativity as a special instance of a more general model. General relativity, like special relativity, treats space and time as parts of a whole: space-time. Special relativity then describes the way distances are evaluated on space-time though the method through which this is done is simple and not position dependent. General relativity on the other hand describes a position and time dependent evaluation of distance which, in simpler terms, means that space and time curve. At the heart of general relativity lie the Einstein field equations which describe exactly how space-time curves in the presence of mass and energy:
+
+
+  \begin{equation*}
+   G_{\mu \nu} + \Lambda g_{\mu \nu} = \frac{8 \pi G}{c^4} T_{\mu \nu}
+  \end{equation*}  
+  
+  Daunting as these equations may be, they can be understood intuitively as a fine and precise balance between the most important quantities in physics: Energy tells space-time how to curve, and space-time tells mass how to move.
+  
+  \newpage
+  \pagenumbering{gobble}
+  \tableofcontents
+
+  \newpage
+  \pagenumbering{arabic}
+  \section{Chapter 1: Mathematical formalisms}
+
+  With this project I seek to study the nature of orbits as predicted by general relativity. To accomplish this I will write a piece of code to simulate the movement of a small planet around a massive object such as a star or black hole. Luckily, the movement of objects through space-time isn't too difficult to simulate and only requires an understanding of a chunk of general relativity. In this chapter I hope to clarify the mathematical foundations required to understand relativity. I assume that the reader has a decent knowledge of calculus I, calculus II, linear algebra and set theory. For the sake of brevity the mathematics underlying relativity will be summarised; I will skip over details and rely on a more intuitive style of explanation to convey concepts.
+
+  \subsection{Topology}
+
+  Space-time is the object of study in general relativity. It is a geometric object which determines the way objects move and change relative to eachother. But what shapes is space-time allowed to take? And what constraints does general relativity assume to be present? Mathematically, space-time is what's called a manifold. A manifold is a set of points that locally resembles euclidean space everywhere. Informally, it's a shape that satisfies the property that "zooming in" on any portion of the surface or hypersurface sufficienlty will yield a flat space. This is akin to how we percieve the earth to be flat despite its global cruvature. The dimension of a manifold is variable. Examples of manifolds are circles and klein-bottles but not lemniscates or squares as a square doesnt resemble euclidean space at its corners and a lemniscate fails the test at its central junction.
+
+  Notice that the definition of a manifold only speaks of a local smoothness property, it adds no structure to describe ideas such as curvature, distances and angles. These values are critical in the description of particle movement so it is imperative that we add more structure to the primitive concept of a manifold. In order to do so we must first define a way to navigate the manifold. After all, distance is a property defined by a set of points, and to quantify this set of points we must have a coordinate system. 
+
+  To solve this problem we may look to a case where a meaningful ordering of numbers has already been defined and figure out how its properties may translate on general manifolds. The real number spaces $\mathbb R^n$ are already endowed with coordinate systems, order and even calculus. To solve the problem of orienting ourselves on the manifold we must understand how to wield our powerful tools in $\mathbb R^n$ and apply them outside their classical domains of usage.
+
+  Accordingly we define the notion of a chart. Charts are maps $\phi : V \rightarrow U$ where U is a subset of $\mathbb R^n$ and V a subset of the manifold $\mathcal M$ . Defining charts on a manifold extends properties of the real numbers onto the manifold which, in effect, provides a means of quantifying and comparing points on the manifold. Intuitively, a coordinate chart takes a region in the real numbers which inherits the coordinate system, smoothness, order and operators from the $\mathbb R^n$ and subsequently bends and twists the subset into the shape of the manifold. The coordinate system and analytical definitions present in the real numbers are pulled along their topological parent and end up providing a useful measure of quantification on the manifold. It should be noted that charts typically only describe a patch of the manifold they are ascribed to. A complete coordinate system is usually formed through the combination of a set of coordinate charts. This is referred to formally as the coordinate atlas.
+
+  This powerful tool may not be intuitive at first glance so I will provide some examples. A daily application of charts is the method of navigation upon the earths surface. Points on the earths surface are typically indexed using the two coordinates longitude and latitude. We can say that point A with latitude X has a larger latitude than point B with latitude Y. This idea of comparing our coordinates is inherited from the structure of the real numbers which, through the coordinate atlas, allows us to make meaningful assertions about coordinate-quantities on the earth. Specifically, the atlas consists of a singular coordinate chart mapping the earth to a subset of $\mathbb R^3$, assuming the earths radius to be 1:
+
+  \begin{equation*}
+    x = cos(\theta) cos(\phi)
+  \end{equation*}
+  \begin{equation*}
+    y = cos(\theta)sin(\phi)
+  \end{equation*}
+  \begin{equation*}
+    z = sin(\theta)
+  \end{equation*}
+
+  \newpage
+
+  \subsection{Tensors}
+
+  Before we generalise our freshly defined structures so that we may properly tackle curvilinear spaces we must entertain a brief interlude to properly arm ourselves. We will start by looking at linear maps of vector fields to the real numbers:
+
+  \begin{equation*}
+    f: V \rightarrow \mathbb R
+  \end{equation*}
+  \begin{equation*}
+    \text{Such that:}
+  \end{equation*}
+  \begin{equation*}
+    f(aV + bW) = af(V) + bf(W)
+  \end{equation*}
+
+  An interesting property of these objects is that they form yet another vector field. You can check this through clever extentions of the properties of V onto the maps though we will not entertain a rigorous proof but rather take it as fact. The vector space formed by these linear maps is referred to as the dual space of V formally $V^*$. If we take a certain element of V, so a vector, and we want to find the associated transformation we must add yet more structure. The object that will satisfy this need is called the metric tensor:
+
+  \begin{equation*}
+    g: V \rightarrow V^*
+  \end{equation*}
+
+  Or more commonly
+
+  \begin{equation*}
+    g: V \times V \rightarrow \mathbb R
+  \end{equation*}
+
+  The latter definition is equivalent to the former as dual vectors are merely linear transformations of vectors. The metric tensor, g, is a rather remarkable object which, although we may not realise it yet, has far-reaching implications in the fields of differential geometry and topology, it weaves the shape of manifolds and allows us to make sense of even the oddest spaces. An important question one may ask is: what even is the metric tensor? The metric tensor is a new type of object called a tensor which serves as a generalisation of vectors and dual vectors. To properly ennunciate this idea I will define vector spaces through the way they transform rather than their solitary characteristics:
+
+  \begin{equation*}
+    V: V^* \rightarrow \mathbb R
+  \end{equation*}
+  \begin{equation*}
+    V^*: V \rightarrow \mathbb R
+  \end{equation*}
+
+Parallelising this with the definition of the metric tensor we see a pattern start to appear and thus a question. How do we generalise the concept of an object taking a set of vectors and dual vectors and outputting a real number? The answer to this question is tensors. A tensor space is defined as follows:
+
+  \begin{equation*}
+    T: V \times V... \times V^* \times V^* \rightarrow \mathbb R
+  \end{equation*}
+
+Thus it is clear that tensors are generalisations of vectors, matrices and dual vectors.
+
+\subsubsection{The Schwarzschild metric}
+
+After the publication of Einstein's paper on general relativity, many physicists scrambled to find non-trivial solutions to his field equations. Karl Schwarzschild was the first to succeed yielding the Schwarzschild metric. The Schwarzschild metric describes the curvature of space around a non rotating neutrally charged object. As expected the schwarzschild metric approaches Newtonian behaviour as $r \rightarrow \infty$.
+
+\begin{equation*}
+  \begin{bmatrix}
+    -(1-\frac{2GM}{rc^2})c^2 & 0 & 0 & 0\\
+    0 & \frac{1}{1-\frac{2GM}{rc^2}} & 0 & 0\\
+    0 & 0 & r^2 & 0\\
+    0 & 0 & 0 & r^2 sin^2 \theta
+  \end{bmatrix}
+\end{equation*}
+
+Notice that the metric seems to use spherical coordinates rather than cartesian coordinates. In fact, it uses a variant of spherical coordinates known as Schwarzschild coordinates. We will not dwell on the distinction as schwarzschild coordinates simply reduce to polar coordinates in 2+1D and we won't be entertaining any 3+1D cases.
+
+  \subsection{Differential geometry and navigating the unintuitive}
+
+  The definition of a coordinate chart allows us to talk about points on any arbitrary manifold $\mathcal M$ though there remains work to be done. In order to estimate what concepts we must formalise within our mathematical structure we can take inspiration from physics. Through charts and atlases we have defined ways to express position in curved spaces. But what about vector fields? Velocity is an extremely important idea in physics describing the way position varies over an affine parameter. Velocity can be seen as a vector field evaluated over the trajectory of a particle such that each vector is tangent to the trajectory and points in the direction of motion. In order to achieve this we must define precisely what a vector field is on a manifold. Notice that vectors in a curved space are always tangent to the space though their tips "poke" out of it by a measure. These vectors thus live in a space defined outside of the manifold. The space these vectors live in is coined the tangent space $T_P \mathcal M$ at the root point $P$ on the manifold $\mathcal M$. 
+
+  \begin{figure}[b!]
+    \centering
+    \includegraphics[width=0.4\linewidth]{pws/tangentspace.png}
+    \caption{An arbitrary tangent space of $\mathcal S^2$}
+    \label{fig:tanspace1}
+  \end{figure}
+
+  Vectors outputted by vector fields always live in the tangent space at the point of evaluation. It should also be noted that the tangent space is not necessarily a plane, its dimensionality always equals that of the manifold and is always a flat space, i.e isomorphic to $\mathbb R^n$. The tangent space of a circle is a line, the tangent space of a surface embedded in 3 dimensions is a plane and any further n-hypersurface has an n dimensional euclidean tangent space. 
+
+  We now have homes for our vectors to live in but we are faced with the same problem we faced at the start of the last chapter. How do we quantify these vectors? This endeavour is thankfully much less complicated since tangent spaces are never curved. The task boils down to defining a basis in the tangent space. There is a set of different methods through which we may define bases in the tangent space though I will only explain the easiest one. We can compute vectors directly by associating them to a certain trajectory through the manifold and a point on this trajectory. Given these quantities we can compute the vector as follows through the calc I definition of a derivative. 
+
+  We can parameterise our trajectory using an affine parameter $\lambda$ varying from 0 to 1, which is formally written as:
+  
+  \begin{equation*}
+    f: [0, 1] \rightarrow \mathcal M
+  \end{equation*}
+
+  To then compute the derivative vector at the point associated with a certain value of the parameter $\lambda$ we simply apply the following equation:
+
+  \begin{equation*}
+    D_\lambda f = \frac{f(\lambda+h) - f(\lambda)}{h}
+  \end{equation*}
+
+  Now to derive the basis vectors in the tangent space $T_P$ we go through every coordinate in the manifold and trace the coordinate curve, which is the curve generated by keeping all coordinates constant except for a coordinate of choice and continuously increasing it such that it forms a closed curve. 
+
+  \begin{equation*}
+    \phi_\mu(\lambda): [0,1] \rightarrow \mathcal M
+  \end{equation*}
+
+  Then we take the directional derivative operator at the point P on this curve to get the basis vector. In actuality the basis vector in the tangent space is defined to be the directional derivative itself rather than the directional derivative of the trajectory, this relates to the earlier discussion of dual vectors and tensors. Note: the superscript indicates indices not exponentiation here; the use of superscripts to denote indices rather than subscripts for certain vectors will be apparent soon.
+
+  \begin{equation*}
+    e^\mu = \partial_\mu (\text{on the coordinate trajectory: } \phi_\mu \text{ at point P})
+  \end{equation*}
+
+  Every vector defined in the tangent space $T_P$ is merely a linear combination of the differential operators $\partial_\mu$ at the point P. Here the einstein summation convention is used, i.e the sum over the index $\mu$ over all dimensions is implied as the index $\mu$ is not present on both sides of the equation.
+
+  \begin{equation*}
+    V = V_{\mu} e^{\mu} = V_{\mu} \partial_{\mu}
+  \end{equation*}
+
+  Now that we have defined vector fields we must define dual vector fields which is not too difficult. Formally, a dual vector field or rather covector field on a manifold is usually referred to as a differential form or a k-form where k is its dimension. The terminology we came up with during the tensor section will now come in handy. Notice that a k-form can be written as follows, since a covector is merely a linear operator acting on vectors:
+
+  \begin{equation*}
+    F: V \times V ... \rightarrow \mathbb R
+  \end{equation*}
+
+This clearly falls under the definition of a tensor, and so do vector fields for that matter. We now have the means to describe not only position but velocity too. Of course, the way velocity changes is itself a difficult problem to tackle. Before we study this we must address the elephant in the room: We still have not defined distances and angles between vectors. To do so we will define an object that takes in two vectors and outputs their distance squared. This object is called the metric tensor. Sound familiar? 
+
+  \begin{equation*}
+    g: V \times V \rightarrow \mathbb R
+  \end{equation*}
+
+In reality, the metric tensor is not only a descriptor of the way dual vectors and vectors are related but it is also a generalisation of the inner product. It relates to the inner product as follows, again the einstein summation convention is implied:
+
+  \begin{equation*}
+    v \cdot w = g_{\mu \nu} v_{\mu} w_{\nu}
+  \end{equation*}
+
+An example of this is the metric tensor in 3 dimensional cartesian space which is:
+
+\begin{equation*}
+  \left[
+  \begin{matrix}
+    1 & 0 & 0\\
+    0 & 1 & 0\\
+    0 & 0 & 1
+  \end{matrix}
+  \right]
+\end{equation*}
+
+Computing the dot product of a vector v with itself in cartesian coordinates, which should be its squared norm we get:
+
+\begin{equation*}
+  ||v||^2 = v_\mu^2
+\end{equation*}
+
+In accordance with the pythagorean theorem. It is noteworthy that this does not hold for curvilinear coordinates such as the polar coordinate system or on curved manifolds such as the sphere. Since the dot product allows us to calculate the angles between vectors the metric also inherits this. 
+
+\begin{equation*}
+  cos(\theta) = \frac{a \cdot b}{|a||b|}
+\end{equation*}
+
+The metric supersedes the inner product in the fact that it is more general and in accordance with the abstraction of varying mathematical concepts into tensors and their interactions. In summary, we now have a space where we can compare points, compute distances between points, describe velocities along trajectories and compute angles between vectors.
+
+\subsection{The connection and geodesics}
+
+As an object moves over a manifold its velocity vector is transfered through multiple tangent spaces. To describe this process we must be capable of expressing the way tangent spaces change over a trajectory. Expressing the way a general vector changes is solved by expressing the way the basis vectors change. The problem is that we cannot simply calculate the difference between two basis vectors in the tangent space, calculate the derivative and call it a day. This difference pokes out of the manifold and thus describing it would require degrees of freedom extraneous to the manifold. To avoid this there are multiple approaches. It is possible to assume an embedding space and merely project the derivative back onto the manifold through an inner product though assuming an embedding space is not a typical procedure when dealing with space-time. Other, more "correct", approaches are possible though they are hairy and rather technical. All of these methods end at the same point though being the definition of what is called the covariant derivative in terms of the connection:
+
+\begin{equation*}
+  \nabla_i = \frac{\partial v^k}{\partial x^i} + \Gamma^k_ {ij} v^j
+\end{equation*}
+
+The quantities $\Gamma^k_{ij}$ are called the christoffel symbols or connection coefficients, they are simply a numerization of the connection suited for this context. The christoffel symbols in the Levi-Civita connection can be calculated from the metric with the following equation, per definition:
+
+\begin{equation*}
+  \Gamma^k_{ij} = \frac{1}{2} g^{ka}(\frac{\partial g_{ai}}{\partial x^j} + \frac{\partial g_{aj}}{\partial x^i} - \frac{\partial g_{ij}}{\partial x^k})
+\end{equation*}
+
+The end goal here is to compute the way an object should move through space time given an initial position and velocity. But what does that mean? The specific path a particle travels along when no forces act on it on a manifold is called a geodesic. On a flat plane a geodesic is merely a straight line though this intuition fails once curvature comes into the picture. On a sphere for example geodesics are always great circles; a great circle being a circle on the surface of a sphere with the same middle point as the sphere. In truth, the metric, through defining the distances and thus "size" of regions on the manifold defines curvature. After all curvature is an emergent property of definitions of distance. Geodesics are formally defined rigorously as trajectories such that transporting the velocity vector accross it through the definition of the covariant derivative keeps the velocity vector tangent to the trajectory:
+
+\begin{equation*}
+  \nabla_{\dot \gamma} \dot \gamma = 0
+\end{equation*}
+
+Through a series of substitutions and mathematical tricks we can derive from this the following equation:
+
+\begin{equation*}
+  \frac{d^2 x^{\beta}}{d \tau^2} = - \Gamma^\beta_{\rho \nu} \frac{dx^\rho}{d \tau} \frac{dx^\nu}{d \tau}
+\end{equation*}
+
+This differential equation completes our mathematical prelude as it allows us, in essence, to compute the trajectory of any object given initial conditions and the metric of the space it lies in. In summary, to compute the way an object moves through a manifold, we first define the coordinate system on the manifold through the mathematics of charts and atlases, next we set up the correct metric given the chosen coorinates, then we compute the christoffel symbols and finally solve the geodesic equation. 
+
+  \newpage
+
+  \section{Programming}
+
+Armed with a sturdy theoretical foundation we now embark upon the construction of a program that may simulate these findings. The main goal of this will be to solve the geodesic equations numerically given any arbitrary metric tensor field. To do so we must first compute the coordinates of an object, then the metric tensor at that point, then the christoffel symbols and then finally these will be funneled into an iterative process to compute the 4-position at $\tau+d\tau$.
+
+\tikzstyle{node} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=white!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\vspace{40pt}
+\hspace{15pt}
+\begin{tikzpicture}[node distance=2cm]
+\node (start) [node, yshift=-2.0cm] {Coords at $\tau$};
+\node (o1) [node, right of=start, xshift=1.5cm] {$g_{\mu \nu}$};
+\node (o2) [node, right of=o1, xshift=1.5cm] {$\Gamma^i_{jk}$};
+\node (o3) [node, below of=o2, yshift=0.5cm] {$\frac{d^2 x^{\beta}}{d \tau^2} = - \Gamma^\beta_{\rho \nu} \frac{dx^\rho}{d \tau} \frac{dx^\nu}{d \tau}$};
+\node (o4) [node, below of=o1, yshift=0.5cm] {Coords at $\tau + d\tau$};
+
+\draw [arrow] (start) -- (o1);
+\draw [arrow] (o1) -- (o2);
+\draw [arrow] (o2) -- (o3);
+\draw [arrow] (o3) -- (o4);
+\draw [arrow] (o4) -| (start);
+\end{tikzpicture}
+\bigskip
+\bigskip
+\newline
+Calculating the metric based on the energy distribution using the einstein field equations would be extremely laborious so we'll choose a predetermined metric tensor field and simply fill in the coordinates. The metric chosen for this project is the schwarzschild metric which corresponds to a point like energy distribution at the origin. The code will be implemented in the unity game engine to limit time wasted on rendering and other redundancies.
+
+\newpage
+\subsection{General structure}
+ 
+To house our computation pipeline we must first make some small accomodations in order to properly organise our code and manage values. Firstly, we will have to find a way to neatly keep track of the ludicrous amounts of indeces. For reference, the metric tensor in 2+1D has 9 components and the Christoffel symbols have 27. In order to do this we will make a tensor class. The tensor class should house two public fields: Shape and Data, along with a constructor:
+
+\begin{minted}{csharp}
+public class Tensor
+{
+    public int[] Shape;
+    public double[] Data;
+
+    public Tensor(params int[] shape)
+    {
+        int IndexCount = 1;
+
+        this.Shape = shape;
+        foreach (int dim in shape)
+        {
+            IndexCount *= dim;
+        }
+
+        Data = new double[IndexCount];
+    }
+
+    public Tensor(double[] data, params int[] shape)
+    {
+        Shape = shape;
+        Data = data;
+
+    }
+}
+\end{minted}
+
+An extra constructor was added for convenience. Data is an array containing each double value in the tensor. A 2D cartesian metric tensor, for example, would have Data = \{1,0,0,1\}. Shape describes the length of each 'side' of the tensor. A shape of \{1,2\} would describe a 1 by 2 matrix.  Data allows us to translate the indeces we want to retrieve into an index that the 'straightened out' Data array can read. As an example, let's say we have a 2 by 2 matrix of 1's. The Data array would be: \{1,1,1,1\} and the Shape array \{2,2\}. Typically, a multidimensional array is used to achieve this though, in the interests of better performance, aesthetics and generalisation, the tensor is "folded out" into a single row which is equipped with a set of functions that allow it to behave like a generalised multidimensional array. 
+
+If we want to access index 1,2 of this matrix we somehow need to convert the input list of integers into a single integer with which we can index the Data array. The following algorithm was used to achieve this functionality with optimal performance:
+
+\newpage
+\begin{minted}{csharp}
+public double this[params int[] indeces]
+    {
+        get
+        {
+            if (indeces.Length == Shape.Length)
+            {
+                double returns;
+                int index = 0;
+                int count = -1;
+                foreach (int _ in indeces)
+                {
+
+                    int x = 1;
+                    for (int i = 0; i <= count; i++)
+                    {
+                        //UnityEngine.Debug.Log(count);
+                        if (count != -1)
+                        {
+                            x *= Shape[count] - 1;
+                        }
+                        else
+                        {
+                            x = 1;
+                        }
+                    }
+                    index += index * x;
+                    count++;
+                }
+                returns = Data[index];
+                return returns;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        set
+        {
+           //Algorithm
+
+            Data[index] = value;
+        }
+    }
+\end{minted}
+
+This function accepts a series of numbers which is automatically turned into the array 'indeces' by the params keyword. Following this, two cases are defined. A case where we are attempting to retrieve the value stored at indeces, and a case where we are attempting to override the value stored at indeces. Functionally, both of these cases have to compute the same index, they only differ in the final line where the get method returns the value stored and the set method overrides it with the assigned value. The exact function of the algorithm is complex and it would be a waste of time to precisely explain its workings. The important idea is that it takes in the indeces that you would feed into a multidimensional array and translates it into a single integer that can be fed into the Data array. 
+
+To finish off our Tensor class we will add some functions to allow for adding and subtracting tensors as well as multiplication and division by scalars. Explaining these functions would be a waste of time as they only differ in one operation. The general idea is that in tensor x tensor operations we combine together identical indeces to obtain a third tensor and then return that. In tensor x scalar operations we combine every tensor index with a scalar and return the result. A display method as a substitute for print() is added too. Our tensor class now looks something like:
+
+\begin{minted}{csharp}
+public class Tensor
+{
+    public int[] Shape;
+    public double[] Data;
+    public Tensor(params int[] shape)
+    {
+        //Constructor #1
+    }
+
+    public Tensor(double[] data, params int[] shape)
+    {
+        //Constructor #2
+    }
+    public double this[params int[] indeces]
+    {
+        get
+        {
+            //Return the value at index
+        }
+        set
+        {
+            //Set the index to value
+        }
+    }
+    public static Tensor operator +(Tensor t1, Tensor t2)
+    {
+        //Add all indeces
+    }
+    }
+    public static Tensor operator -(Tensor t1, Tensor t2)
+    {
+       //Subtract all indeces
+    }
+    public static Tensor operator *(double a, Tensor t)
+    {
+        //Multiply every index with a
+    }
+    public static Tensor operator *(Tensor t, double a)
+    {
+        //Overload of the previous operator incase T*a is present rather than a*T
+    }
+    public static Tensor operator *(Tensor t1, Tensor t2)
+    {
+        //Multiply all indeces
+    }
+    public static Tensor operator /(Tensor t, double a)
+    {
+        //Divide all indeces by a
+    }
+    public static Tensor operator -(Tensor t)
+    {
+        //Multiply all indeces by -1
+    }
+    public void display()
+    {
+        string values = string.Join(", ", Data);
+        UnityEngine.Debug.Log(values);
+    }
+}
+\end{minted}
+
+\newpage
+This finishes off most of the required architecture in preparation for the computation pipeline. The last thing we must do is add a class that inherits Unity's monobehaviour namespace and thus allows us to use handy functions like Start() and Update():
+
+\begin{minted}{csharp}
+public class GeodesicComputer : MonoBehaviour
+{
+    void Start()
+    {
+    }
+
+    void Update()
+    {
+    }
+}
+\end{minted}
+
+Some constants that we may use later will be defined now along with Transforms for the central mass and the affected body. The transform is a unity interface that allows us to update the computed positions to actual objects enabling us to visualise the computations in real-time. The SerializeField marker simply allows us to hook up the transform variables to the actual objects in the unity game engine. This step will not be discussed as it is external to the programming.
+
+\begin{minted}{csharp}
+public class GeodesicComputer : MonoBehaviour
+{
+    [SerializeField]
+    Transform blackHole;
+
+    [SerializeField]
+    Transform body;
+
+    const double G = 6.67408e-11;
+    const double c = 299792458;
+    const double scale = 5e6; //0.467*1.496E11
+    double M = 1.989e30; //In solar masses
+    double h = 0.0005; //31536/1000
+
+    //Start and update methods
+}
+\end{minted}
+
+\newpage
+\subsection{Phase 1: Coordinates}
+Now that we have the necessary constants and functions in place we can move onto the first phase in the pipeline: Coordinate computation. Most coordinate manipulation will take place in the Start() method where the unity coordinates are converted into polar coordinates that can be fed into the next phase of the pipeline. The initial velocity will be hardcoded in the Start() method. We will append the 3-velocity and the 3-position into one 6 dimensional state-vector. This is done both for conciseness and because it is required in a later step. We will discuss this further in the chapter on solving the geodesic equation. For now the code should look something like:
+
+\begin{minted}{csharp}
+public class GeodesicComputer : MonoBehaviour
+{
+    //Constants
+
+    Tensor X = new Tensor(6);
+    void Start()
+    {
+        X[0] = 0;
+        X[1] = scale * body.localPosition.x;
+        X[2] = scale * body.localPosition.y;
+        X[3] = 1;
+        X[4] = 0;
+        X[5] = 8.26362584E-7/1000; //8.26362584E-7/1000
+    }
+
+    //Update function
+}
+\end{minted}
+
+\newpage
+Notice that the position is currently still cartesian, though our program requires polar coordinates. We don't have to change the 3-velocity (the last 3 components) because they are already polar (an angular velocity of 8.26362584E-10 and no radial velocity). Later on we will have to convert the polar outputted polar coordinates back to cartesian coordinates in order to display them properly. Accordingly we define two functions:
+
+\begin{minted}{csharp}
+public class GeodesicComputer : MonoBehaviour
+{
+    //Constants
+
+    Tensor cartToPol(Tensor cart)
+    {
+        double r = Math.Sqrt(cart[1] * cart[1] + cart[2] * cart[2]);
+        Tensor result = cart;
+        result[1] = r;
+        double theta;
+        if (cart[1] != 0)
+        { 
+            theta = Math.Atan(cart[2] / cart[1]);
+        }
+        else
+        {
+            if (cart[2] > 0)
+            {
+                theta = Math.PI / 2;
+            }
+            else
+            {
+                theta = 3 * Math.PI / 2;
+            }
+        }
+        result[2] = theta;
+        return result;
+    }
+
+    Tensor polToCart(Tensor pol)
+    {
+        Tensor result = new Tensor(3);
+        result[0] = pol[0];
+        result[1] = pol[1] * Math.Cos(pol[2]);
+        result[2] = pol[1] * Math.Sin(pol[2]);
+        return result;
+    }
+
+    //Update and start functions
+}
+\end{minted}
+
+These functions allow us to convert between polar and cartesian coordinate systems using the following equations:
+
+\begin{equation*}
+(t,r,\theta) = (t,\sqrt{x^2+y^2},tan^{-1}(\frac{y}{x}))
+\end{equation*}
+
+\begin{equation*}
+(t,x,y) = (t,rcos(\theta),rsin(\theta))
+\end{equation*}
+
+\newpage
+All we have to do now is transform the cartesian coordinates into polar coordinates which brings an end to this chapter:.
+\begin{minted}{csharp}
+public class GeodesicComputer : MonoBehaviour
+{
+    //Constants
+
+    Tensor X = new Tensor(6);
+    void Start()
+    {
+        X[0] = 0;
+        X[1] = scale * body.localPosition.x;
+        X[2] = scale * body.localPosition.y;
+        X[3] = 1;
+        X[4] = 0;
+        X[5] = 8.26362584E-7/1000; //8.26362584E-7/1000
+
+        X = cartToPol(X);
+    }
+
+    //Update function
+}
+\end{minted}
+
+\subsection{Phase 2: The metric}
+
+In order to compute the christoffel symbols and thus solve the geodesic equation we need the metric components at the given coordinates. The metric here is the schwarzschild metric which is discussed in a more detailed fashion in chapter one. The components of the schwarzschild metric are:
+
+\begin{equation*}
+  \begin{bmatrix}
+    -(1-\frac{2GM}{rc^2})c^2 & 0 & 0 & 0\\
+    0 & \frac{1}{1-\frac{2GM}{rc^2}} & 0 & 0\\
+    0 & 0 & r^2 & 0\\
+    0 & 0 & 0 & r^2 sin^2 \theta
+  \end{bmatrix}
+\end{equation*}
+
+All the constants used here have been defined and so have the coordinates so we can get directly to writing the function. We will define some extra variables in order to optimise computation time:
+
+\begin{minted}{csharp}
+Tensor schwarzschildMetric(Tensor coords, double mass)
+{
+
+    Tensor g = new Tensor(3,3);
+
+    double rs = 2 * G * mass / (c*c);  
+    double p = 1 - rs/coords[1];
+
+    g[0, 0] = -c * c * p;
+    g[1, 1] = 1 / p;
+    g[2, 2] = coords[1] * coords[1];
+
+    return g;
+}
+\end{minted}
+
+\newpage
+We will also write an expression for the inverse schwarzschild metric which is necessary to compute the Christoffel symbols. The inverse schwarzschild metric can be obtained through Gaussian elimination. It's components are simply the reciprocals of the original metric components:
+
+\begin{minted}{csharp}
+Tensor inverseMetric(Tensor coords, double mass)
+{
+        Tensor g = new Tensor(3,3);
+
+        double rs = 2 * G * mass / (c * c);
+        double p = 1 - rs / coords[1];
+
+        g[0, 0] = 1/(-c * c * p);
+        g[1, 1] = p;
+        g[2, 2] = 1/(coords[1] * coords[1]);
+
+        return g;
+}
+\end{minted}
+
+\subsection{Phase 3: The Christoffel symbols}
+
+The Christoffel symbols are computed solely with derivatives of the metric and the components of the inverse metric. Since we have both we can start writing a function to compute them. The Christoffel symbols are arranged in a rank-3 tensor with 27 components:
+
+\begin{minted}{csharp}
+Tensor christoffelSymbols(Tensor g, Tensor coords, double mass)
+{
+    Tensor Gamma = new Tensor(3,3,3);
+    Tensor inv = inverseMetric(coords, mass);
+}
+\end{minted}
+
+The expression for the Christoffel symbols in terms of the metric components is:
+
+\begin{equation*}
+  \Gamma^k_{ij} = \frac{1}{2} g^{ka}(\frac{\partial g_{ai}}{\partial x^j} + \frac{\partial g_{aj}}{\partial x^i} - \frac{\partial g_{ij}}{\partial x^k})
+\end{equation*}
+
+Two problems immediately jump out: How will we compute the metric derivatives and how can we avoid having to run the calculation 81 times (27 times 3 due to the alpha component) per function call? The first problem is the easiest to solve. We simply return to the definition of the derivative:
+
+\begin{equation*}
+\frac{dy}{dx} = \lim_{h \to 0} \frac{f(x+h)-f(x)}{h}
+\end{equation*}
+
+The whole idea of a limit is that we can approximate the value of the derivative with increasing precision as h approaches 0. If we simply evaluate this fraction at a small enough h such that the error is within acceptable bounds yet is large enough such that floating point errors dont knock it off too much we will get a decent estimate of the derivative. Now for the second problem. To solve this we will make the following observation: Since the derivatives loop from 0 to 2 and the metric has 3 components we really need 3*3*3 = 27 derivative evaluations. Most of these evaluations are trivial since off-diagonal components in the metric tensor are equal to zero. Thus we arrange the derivatives into an array of 3 3x3 tensors where each tensor contains derivatives in the index direction of the set index:
+
+\begin{minted}{csharp}
+Tensor[] metricDerivatives = {
+    new Tensor(3,3),
+    new Tensor(3,3),
+    new Tensor(3,3),
+};
+double h = scale/10000.0;
+
+for (int i = 0; i < 3; i++)
+{
+    Tensor dCoords = new Tensor(6);
+    dCoords[i] = h;
+    metricDerivatives[i] = (schwarzschildMetric(coords + dCoords, mass) - g) / h;
+}
+\end{minted}
+
+Here the optimal h was found using trial and error. Now that we have the derivatives along with the inverse metric we can simply write down the definition of the Christoffel symbols yielding the following function:
+
+\begin{minted}{csharp}
+Tensor christoffelSymbols(Tensor g, Tensor coords, double mass)
+    {
+        Tensor Gamma = new Tensor(3,3,3);
+        Tensor inv = inverseMetric(coords, mass);
+        Tensor[] metricDerivatives = {
+            new Tensor(3,3),
+            new Tensor(3,3),
+            new Tensor(3,3),
+        };
+        double h = scale/10000.0;
+
+        for (int i = 0; i < 3; i++)
+        {
+            Tensor dCoords = new Tensor(6);
+            dCoords[i] = h;
+            metricDerivatives[i] = (schwarzschildMetric(coords + dCoords, mass) - g) / h;
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                        for (int a = 0; a < 3; a++)
+                        {
+
+                            //double gDj = metricDerivatives[j, a, k];
+                            //double gDk = metricDerivatives[k, a, j];
+                            //double gDa = metricDerivatives[a, j, k];
+
+                            Gamma[i, j, k] += 0.5 * inv[i, a] * 
+			(metricDerivatives[k][a, j] + metricDerivatives[j][a, k] - metricDerivatives[a][j, k]);
+
+                        }
+                }
+            }
+        }
+
+        return Gamma;
+    }
+\end{minted}
+
+\newpage
+
+\subsection{Phase 4: Solving the geodesic equation}
+
+Let us now return to the original goal of the pipeline: To compute the position at the next iteration. To do so we must make use of the Update() function which is called by UnityEngine every frame. We will perform a physics update 6 times per frame where each physics iteration involves inputting X into a function, solveGeodesic(), that will yield X at $\tau + d\tau$. solveGeodesic() will take in the position at $\tau$, the set $d\tau$ and the mass of the gravitation source M. 
+
+\begin{minted}{csharp}
+void Update()
+    {
+        for (int N = 0; N <= 5; N++)
+        {
+             X = solveGeodesic(h, X, M);
+        }
+    }
+\end{minted}
+
+After updating the position we display it to the unity engine renderer by updating the transform. First, we must convert the position from the polar to the cartesian representation. Then we can divide by the scale and assign it to the transform. It should be noted that Unity transforms obviously don't accept our custom Tensor class so we must convert it into a Vector3 which also requires th:
+
+\begin{minted}{csharp}
+void Update()
+    {
+        for (int N = 0; N <= 5; N++)
+        {
+             X = solveGeodesic(h, X, M);
+
+            Tensor XCart = polToCart(X) / scale; //Convert to cartesian coordinates and scale down
+            Vector3 finalPos = new Vector3((float)XCart[1], (float)XCart[2], 0); //Tensor to Vector3
+            body.localPosition = finalPos; //Update the transform
+        }
+    }
+\end{minted}
+
+This finishes off the update function leaving one more function to define: solveGeodesic(). In essence, all solveGeodesic() must do is solve a differential equation iteratively given the christoffel symbols. Second order differential equations can always be reduced to two sets of first order equations:
+
+
+\begin{equation*}
+  \frac{d^2 x^{\beta}}{d \tau^2} = - \Gamma^\beta_{\rho \nu} \frac{dx^\rho}{d \tau} \frac{dx^\nu}{d \tau}
+\end{equation*}
+\begin{equation*}
+  \frac{dv^\beta}{d\tau} = - \Gamma^\beta_{\rho \nu} v^\rho v^\nu
+\end{equation*}
+\begin{equation*}
+  v^\mu=\partial_\tau x^\mu 
+\end{equation*}
+
+We now append x and v into one large 6 dimensional vector, X. The differential equations are fused accordingly to yield a vector F:
+
+\begin{equation*}
+  \partial_\tau (x^0, x^1, x^2, v^0, v^1, v^2) = (v^0, v^1, v^2, - \Gamma^\lambda_{\mu \nu} v^\mu v^\nu)
+\end{equation*}
+
+To solve this equation multiple methods are available. The least expensive and most common one is the Euler algorithm which is comprised of one single step. The Euler algorithm is easy to implement but tends to be inaccurate in complex or chaotic systems so we will use something more powerful: The Runge-Kutta 4 algorithm. Rk4 requires 4 steps, each step entailing an evaluation of the Christoffel symbols (this is why it was so important to optimise Christoffel symbol computation, the function will be called 6*4 = 24 times per frame). First we will write down the geodesic evaluation function:
+
+\begin{minted}{csharp}
+Tensor solveGeodesic(double h, Tensor coords, double mass)
+{
+    Tensor returnValues = new Tensor(6);
+
+    return returnValues;
+}
+\end{minted}
+
+The rk4 algorithm will assess 4 evaluations of F each 'taking one fourth of a step towards $\tau + d\tau$':
+
+\begin{minted}{csharp}
+Tensor solveGeodesic(double h, Tensor coords, double mass)
+    {
+        Tensor returnValues = new Tensor(6);
+        //returnValues = coords + h * F(coords, mass);
+        //Debug.Log(returnValues);
+        Tensor k1 = F(coords, mass);
+        Tensor k2 = F(coords + k1 * h / 2, mass);
+        Tensor k3 = F(coords + k2 * h / 2, mass);
+        Tensor k4 = F(coords + k3 * h, mass);
+
+        returnValues = coords + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+
+        return returnValues;
+    }
+\end{minted}
+
+This completes the solveGeodesic() method. Now we must simply write down a function to evaluate the 6-dimensional vector F. To compute F we need the Christoffel symbols which in turn require the metric tensor:
+
+\begin{minted}{csharp}
+Tensor F(Tensor position, double mass)
+    {
+        Tensor g = schwarzschildMetric(position, mass);
+        Tensor Gamma = christoffelSymbols(g, position, mass);
+
+        Tensor result = new Tensor(6);
+    }
+\end{minted}
+
+\newpage
+Now we simply need to move the velocity component, X[3], X[4] and X[5] into F[0], F[1] and F[2]. Then we compute the contraction of the Christoffel symbols with the velocity components and insert the results into F[3], F[4] and F[5]:
+
+\begin{minted}{csharp}
+Tensor F(Tensor position, double mass)
+    {
+        Tensor g = schwarzschildMetric(position, mass);
+        Tensor Gamma = christoffelSymbols(g, position, mass);
+
+        Tensor result = new Tensor(6);
+        Tensor v = new Tensor(3);
+        v[0] = position[3];
+        v[1] = position[4];
+        v[2] = position[5];
+        result[0] = v[0];
+        result[1] = v[1];
+        result[2] = v[2];
+
+        stopwatch.Start();
+        for (int a = 0; a < 3; a++)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    result[a+3] -= Gamma[a, i, j] * v[i] * v[j];
+                }
+            }
+        }
+        return result;
+    }
+\end{minted}
+
+Finally the result is returned to the computeGeodesic() function which completes the final phase of the pipeline and thus the program as a whole.
+
+\newpage
+\section{Results and discussion}
+\subsection{Sanity checking and testing}
+
+The behaviour of gravity in the schwarzschild metric is very close to newtonian gravity at large distances. It is valuable to first test if this expectation is confirmed in our program. To do this we input the initial conditions of the earth's orbit and observe. First we set the scale equal to 1.496E11 or 1AU. Transform coordinates of (1,0) are thus equivalent to a distance of 1 AU at an angle of 0. We know that it should have no radial velocity since the earth's orbit is roughly circular. The angular velocity in rad/s can be computed by dividing $2\pi$ by the amount of seconds in a year. Thus:
+
+\begin{minted}{csharp}
+
+        X[0] = 0;
+        X[1] = scale * body.localPosition.x;
+        X[2] = scale * body.localPosition.y;
+        X[3] = 1;
+        X[4] = 0;
+        X[5] = 1.99236428E-7;
+\end{minted}
+
+Given these initial conditions the following trajectory is plotted using the Unity line renderer:
+
+  \begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.4\linewidth]{pws/test1.png}
+    \caption{Orbit of the earth}
+    \label{fig:test1}
+  \end{figure}
+
+As expected, the orbit is circular and stable over time. Much effort was put into the stability part as the tensor object explicitly uses float64 instead of float32 in order to maximize accuracy. To stress test this we will gradually increase the $\Delta \tau$. Benchmarking results are listed below.
+
+\newpage
+\begin{figure}[t!]
+  \centering
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test2.png}
+    \caption{1.4 yrs/s. Trajectory stable}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test3.png}
+    \caption{7.2 yrs/s. Trajectory stable}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test4.png}
+    \caption{28.6 yrs/s. Trajectory stable}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test5.png}
+    \caption{85.7 yrs/s. Thickening of orbit render shows that the object is losing energy. First sign of instability}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test6.png}
+    \caption{200 yrs/s. More extreme version of previous test.}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test7.png}
+    \caption{585.7 yrs/s. Complete degeneration. Computation reached NaN values after 8 seconds due to the body jumping into the event horizon.}
+  \end{subfigure}  
+  \caption{GR simulator benchmarking}
+  \label{fig:test2}
+\end{figure}
+
+The intended use of this program was to obtain a rough visualisation of relativistic effects so the fact that it showed practically no deviation from reality until reaching massive time steps of centuries per second is rather impressive. Keep in mind that every picture was taken after about 10 seconds of runtime. It is impressive that a program intended to study relativistic effects can achieve such degrees of accuracy outside of its domain of intended usage. The results could be improved by increasing the amount of computations per frame, switching to an algorithm more powerful than rk4 or using a datatype more accurate than float64. The latter is likely to not be a problem within 10 seconds of runtime so the choice is between the first two.
+
+It should also be noted that there is absolutely no lag despite the 1000+ Christoffel symbol evaluations per second. The average frame rate among these tests is about 247 fps. The program simulates the most accurate model of gravity humanity has ever developed and still runs better than Minecraft.
+
+\subsection{Relativistic effects}
+
+\subsubsection{Orbital precession}
+The application is fairly accurate with newtonian effects, which is fascinating because all Newtonian behaviour is completely emergent and not hardcoded into the system. Now that the Newtonian tests are completed we will test the expected relativistic effects. No further benchmarks will be performed as the computational intensity does not vary between these cases. The most infamous artifact of the Schwarzschild interpretation of gravity is orbital precession. To simulate orbital precession a highly eccentric orbit is necessary. The eccentricity of an orbit describes how 'elliptical' an orbit is. An eccentricity of 0 is a perfectly circular orbit and eccentricities close to 1 are highly stretched. High eccentricity orbits can be obtained by gradually decreasing the initial velocity of the earth until effects are measured. The results are documented below.
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test8.png}
+    \caption{$\frac{v_0}{2}$}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test9.png}
+    \caption{$\frac{v_0}{3}$}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test10.png}
+    \caption{$\frac{v_0}{5}$}
+  \end{subfigure}  
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{pws/test11.png}
+    \caption{$\frac{v_0}{7}$}
+  \end{subfigure}  
+  \caption{Orbital precession}
+  \label{fig:test3}
+\end{figure}
+
+Notice that the severity of the orbital precession, rigorously the $\Delta \alpha$, between the axes, seems to worsen as the object's initial velocity lowers and its perihelion distance approaches the host star. Further simulations cannot be computed as the object reaches extreme speeds the closer it gets due to the conservation of energy. Orbits with such eccentricities are rare in our solar system, only occuring in planetoids and mercury. Even so, the mercurial orbit has an eccentricity of 0.22 which is lower than even the least eccentric orbit in our simulation which had an eccentricity of about 0.3.  It is also to be noted that this precession is a purely relativistic effect and is not predicted by any previous theories. In fact, the precession of the orbit of mercury was a main motivator for the creation of the general theory of relativity.
+
+\subsubsection{Time dilation}
+
+Since the computation is localized to the reference frame of the moving body and nothing is changing in the stationary reference frame we won't notice the effects of time dilation. To witness the effects of time dilation we will need to transform the time component into that of a stationary observer at a distance. To do this we will use the fact that the time component in an outside reference frame is already computed as X[0]. This time coordinate is our dt, the $d\tau$ can be computed using the time step. Essentially, our goal here is to align the simulation speed with the speed at which the time component changes, $\frac{dt}{d\tau}$. To do this we first compute this derivative and then divide the time step by this derivative:
+
+\begin{minted}{csharp}
+void Update()
+{
+    for (int N = 0; N <= 5; N++)
+    {
+        //Code
+
+        h /= (X[0] - previousTime) / h;
+        previousTime = X[0];
+
+       //Code
+    }
+}
+\end{minted}
+
+Gravitational time dilation requires a very extreme warping of space-time to be noticeable. To achieve this we will massively decrease the scale such that the black hole, with a radius of 3 km roughly becomes visible. Then we drop an object into it. A modification was made to the rendering code to let it snapshot the object every frame.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics{pws/test12}
+  \caption{Object slows down as it approaches event horizon}
+  \label{fig:test4}
+\end{figure}
+
+The initial time velocity here is much higher than it should be to properly highlight the time dilation. Even so, it hardly even gets through a third of the distance to the black hole before practically freezing. In reality, it isnt frozen but will take exponentially longer to reach the event horizon as the distance grows smaller. The fascinating thing about this is phenomenon is that, despite requiring infinite time to cross the event horizon from an onlooker's reference frame, it can do so in finite time from its own perspective.
+
+\subsection{Discussion and conclusion}
+
+The written code is extremely powerful having pin-point accuracy along with a very high performance. It was capable of showcasing pretty much any expected relativistic or Newtonian effect present in basic gravitational wells. It was only limited by the initial values, rendering and choice of metric. Most of the later testing was impeded by the overly elevated initial time velocity which made it very easy for floating point errors and such to severely impact results. This could be fixed by improving the available tools to set initial conditions. 
+
+A nice quality of the code is that it is  generalizable. Any metric in any amount of diimensions would work in this framework, though obviously performance would vary. 
+
+There are some future plans as, obviously, it would be a waste to delete this code. It will most likely be expanded and rewritten to form the basis of a general relativistic ray-tracing engine. The full code snippet will be appended in the resources section.
+
+\newpage
+
+\section{Resources}
+
+\subsection{Sources}
+
+\begin{enumerate}
+  \item Hobson, M.P., Efstathiou, G., Lasenby, A.N. (2006). \textit{General Relativity:An Introduction for Physicists}
+  \item Ying, X. (w.d.). No title. \textit{latex-tutorial}. Reviewed the 12th of December 2023, on \href{https://latex-tutorial.com}{https://latex-tutorial.com}
+\end{enumerate}
+
+\subsection{Further information}
+
+1. \href{https://github.com/programmingyeah/GR-simulator}{Code}
+
+\end{document}
